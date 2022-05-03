@@ -2,22 +2,33 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gempir/go-twitch-irc/v3"
+	"github.com/joho/godotenv"
 )
 
-const RxKiro = "rxKiro"
-const Streamer = "kironto"
+var RxKiro = getEnvVariable("BOT_NAME")
+var Streamer = getEnvVariable("STREAMER")
+var OAUTH = getEnvVariable("OAUTH")
+
+func getEnvVariable(key string) string {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
+}
 
 func main() {
-	// TODO: make this an env value
-	client := twitch.NewClient(RxKiro, "oauth:")
+	client := twitch.NewClient(RxKiro, OAUTH)
 
 	client.Join(Streamer)
 	defer client.Disconnect()
 
 	log.Println("Bot has started")
-	client.Say(Streamer, "Hello World")
+	client.Say(Streamer, "/announce Hello World")
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		log.Println(message.Message)
