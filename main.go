@@ -7,16 +7,12 @@ import (
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v3"
-	"github.com/joho/godotenv"
+	"github.com/kirontoo/rxkiro/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-var RxKiro = getEnvVariable("BOT_NAME")
-var Streamer = getEnvVariable("STREAMER")
-var OAUTH = getEnvVariable("OAUTH")
-
-const COMMAND_PREFIX = "!"
+var botConfig config.Config
 
 func main() {
 	// Enable pretty logging
@@ -24,18 +20,23 @@ func main() {
 	output.FormatMessage = func(i interface{}) string {
 		return fmt.Sprintf("| %s |", i)
 	}
-
 	log.Logger = log.Output(output)
 
+	botConfig, err := config.LoadConfig(".", "bot")
+	if err != nil {
+		log.Error().Msgf("%s", err)
+		log.Fatal().Msg("Could not load env variables")
+	}
+
 	// Create a new twitch IRC client
-	client := twitch.NewClient(RxKiro, OAUTH)
+	client := twitch.NewClient(botConfig.BotName, botConfig.AuthToken)
 
 	// Connect to IRC
-	client.Join(Streamer)
+	client.Join(botConfig.Streamer)
 	defer client.Disconnect()
 
-	log.Info().Str("Streamer", Streamer).Str("Bot name", RxKiro).Msg("Connected to chat")
-	client.Say(Streamer, "/announce Hello World")
+	log.Info().Str("Streamer", botConfig.Streamer).Str("Bot name", botConfig.BotName).Msg("Connected to chat")
+	client.Say(botConfig.Streamer, "/announce Hello World")
 
 	// Listen for messages
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
@@ -43,29 +44,20 @@ func main() {
 		parseCommand(message)
 	})
 
-	err := client.Connect()
-	if err != nil {
-		panic(err)
+	clientErr := client.Connect()
+	if clientErr != nil {
+		panic(clientErr)
 	}
-}
-
-func getEnvVariable(key string) string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal().Msg("Error loading .env file")
-	}
-
-	return os.Getenv(key)
 }
 
 func parseCommand(message twitch.PrivateMessage) {
 	messageWords := strings.Split(message.Message, " ")
 
-	isCommand := strings.HasPrefix(messageWords[0], COMMAND_PREFIX)
+	isCommand := strings.HasPrefix(messageWords[0], botConfig.CmdPrefix)
 
 	if isCommand {
-		command := strings.TrimPrefix(messageWords[0], COMMAND_PREFIX)
-		log.Printf("Command: %s", command)
+		command := strings.TrimPrefix(messageWords[0], botConfig.CmdPrefix)
+		log.Debug().Str("Cmd", command)
 	}
 
 	return
