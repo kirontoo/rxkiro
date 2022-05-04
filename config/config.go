@@ -7,6 +7,8 @@ type Config struct {
 	Streamer  string `mapstructure:"STREAMER"`
 	AuthToken string `mapstructure:"AUTH_TOKEN"`
 	CmdPrefix string `mapstructure:"COMMAND_PREFIX"`
+	DbUrl     string `mapstructure:"DB_API_URL"`
+	DbToken   string `mapstructure:"DB_TOKEN"`
 }
 
 func LoadConfig(path string, configName string) (config Config, err error) {
