@@ -55,9 +55,10 @@ func (b *RxKiro) Send(msg string) {
 }
 
 func (b *RxKiro) RunCmd(cmdName string) {
-	cmd, ok := b.Commands[cmdName]
+	run, ok := b.Commands[cmdName]
 	if ok {
-		cmd.(func(*RxKiro))(b)
+		b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
+		run.(func(*RxKiro))(b)
 	} else {
 		res, _, err := b.db.From("Commands").Select("*", "exact", false).Eq("name", cmdName).Execute()
 		if err != nil {
@@ -67,15 +68,20 @@ func (b *RxKiro) RunCmd(cmdName string) {
 
 		var dbCmd []Command
 		json.Unmarshal(res, &dbCmd)
-		b.Log.Debug().Interface("commands", dbCmd).Send()
+		b.Log.Debug().Interface("commands", dbCmd).Msg("Cmds in DB")
 		if len(dbCmd) > 0 {
 			data := dbCmd[0]
 			if data.IsCounter {
 				// TODO
 			}
 
+			b.Log.Info().Str("cmd", cmdName).Msg("Cmd found in DB")
+			b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
 			b.Send(data.Value)
 			// TODO cache db queries?
+		} else {
+			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
+			b.Send("This is invalid!")
 		}
 	}
 
