@@ -6,7 +6,6 @@ type Config struct {
 	BotName   string `mapstructure:"BOT_NAME"`
 	Streamer  string `mapstructure:"STREAMER"`
 	AuthToken string `mapstructure:"AUTH_TOKEN"`
-	CmdPrefix string `mapstructure:"COMMAND_PREFIX"`
 	DbUrl     string `mapstructure:"DB_API_URL"`
 	DbToken   string `mapstructure:"DB_TOKEN"`
 }
