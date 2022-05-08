@@ -52,7 +52,7 @@ func parseCommand(message string) (string, bool) {
 	messageWords := strings.SplitN(message, " ", 2)
 
 	isCommand := strings.HasPrefix(messageWords[0], CMD_PREFIX)
-	log.Debug().Str("Prefix", CMD_PREFIX).Msg("CommandPrefix")
+	// log.Debug().Str("Prefix", CMD_PREFIX).Msg("CommandPrefix")
 
 	if isCommand {
 		command := strings.TrimPrefix(messageWords[0], CMD_PREFIX)
