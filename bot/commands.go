@@ -11,7 +11,7 @@ var botCommands = map[string]interface{}{
 		b.Send("pong")
 		b.Send("where is this going?")
 	},
-	"randomFact": randomAnimalFact,
+	"animalFact": randomAnimalFact,
 }
 
 func randomAnimalFact(b *RxKiro) {
