@@ -5,13 +5,30 @@ import (
 	"strconv"
 )
 
+var pingedCount = 0
+
 var botCommands = map[string]interface{}{
-	"ping": func(b *RxKiro) {
-		// TODO after pinged 5 times in a row, send back a special msg might need to save a the time and a db record for this
-		b.Send("pong")
-		b.Send("where is this going?")
-	},
+	"ping":       ping,
 	"animalFact": randomAnimalFact,
+}
+
+func ping(b *RxKiro) {
+	pingedCount += 1
+
+	switch pingedCount {
+	case 3:
+		b.Send("...pong...")
+		break
+	case 4:
+		b.Send("pong!")
+		break
+	case 5:
+		b.Send("PONG!")
+		b.Send("Where is this going?")
+		pingedCount = 0
+	default:
+		b.Send("pong")
+	}
 }
 
 func randomAnimalFact(b *RxKiro) {
