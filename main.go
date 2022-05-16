@@ -29,7 +29,6 @@ func main() {
 	rxkiro.Client.Join(rxkiro.Config.Streamer)
 
 	log.Info().Str("Streamer", rxkiro.Config.Streamer).Str("Bot name", rxkiro.Config.BotName).Msg("Connected to chat")
-	rxkiro.Send("/announce Hello World")
 
 	// Listen for messages
 	rxkiro.Client.OnPrivateMessage(func(message twitch.PrivateMessage) {
