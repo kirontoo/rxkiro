@@ -2,7 +2,6 @@ package bot
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/config"
@@ -18,6 +17,12 @@ type Command struct {
 	Value     string `json:"value"`
 	IsCounter bool   `json:"isCounter"`
 	CreatedAt string `json:"created_at"`
+}
+
+type AnimalFact struct {
+	ID        int64  `json:"id"`
+	CreatedAt string `json:"created_at"`
+	Value     string `json:"value"`
 }
 
 type RxKiro struct {
@@ -38,7 +43,7 @@ func NewBot(envPath string, logger zerolog.Logger) *RxKiro {
 	}
 
 	return &RxKiro{
-		Commands: commands,
+		Commands: botCommands,
 		Log:      logger,
 		Config:   botConfig,
 		Client:   twitch.NewClient(botConfig.BotName, botConfig.AuthToken),
@@ -46,13 +51,14 @@ func NewBot(envPath string, logger zerolog.Logger) *RxKiro {
 	}
 }
 
-var commands = map[string]interface{}{
-	"ping": func(b *RxKiro) {
-		// TODO after pinged 5 times in a row, send back a special msg
-		// might need to save a the time and a db record for this
-		b.Send("pong")
-		b.Send("where is this going?")
-	},
+func trimQuotes(s string) string {
+	if len(s) > 0 && s[0] == '"' {
+		s = s[1:]
+	}
+	if len(s) > 0 && s[len(s)-1] == '"' {
+		s = s[:len(s)-1]
+	}
+	return s
 }
 
 func (b *RxKiro) Send(msg string) {
@@ -81,22 +87,9 @@ func (b *RxKiro) RunCmd(cmdName string) {
 			data := dbCmd[0]
 
 			if data.IsCounter {
-				data.Counter = b.incrementCounter(data.Counter)
-				b.Log.Debug().Int64("counter", data.Counter).Msg("Should increment")
-				updatedRes, _, err := b.db.From(CommandTable).Update(data, "representation", "exact").Eq("name", data.Name).Execute()
-
-				var jsonRes Command
-				json.Unmarshal(updatedRes, &jsonRes)
-				if err != nil {
-					b.Log.Error().Interface("Command", jsonRes).Msg("Error updating")
-					b.Log.Error().Err(err)
-				}
-
-				msg := data.Name + ": " + strconv.Itoa(int(data.Counter))
+				msg := b.runCounterCmd(data)
 				b.Send(msg)
-			}
-
-			if data.Value != "" {
+			} else if data.Value != "" {
 				b.Send(data.Value)
 			} else {
 				b.Send("There's nothing here!")
@@ -106,8 +99,4 @@ func (b *RxKiro) RunCmd(cmdName string) {
 			b.Send("This is invalid!")
 		}
 	}
-}
-
-func (b *RxKiro) incrementCounter(count int64) int64 {
-	return (count + 1)
 }
