@@ -96,7 +96,7 @@ func (b *RxKiro) RunCmd(cmdName string) {
 			}
 		} else {
 			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
-			b.Send("This is invalid!")
+			b.Send("ERR: Invalid Command. Try again.")
 		}
 	}
 }
