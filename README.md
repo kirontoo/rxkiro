@@ -27,7 +27,7 @@ git clone https://github.com/kirontoo/rxkiro.git
 git clone git@github.com:kirontoo/rxkiro.git
 ```
 
-**Step 2**: Make sure install all Go modules
+**Step 2**: Make sure to install all Go modules
 ```
 go mod download
 ```
@@ -37,7 +37,7 @@ go mod download
 #### Environment Variables
 Make a environment file called `bot.env`.
 
-Here all the environment variables you need to set.
+Here are all the environment variables you need to get started.
 ```
 AUTH_TOKEN=your twitch auth login token
 BOT_NAME=bot name or user you are logging in as
@@ -47,7 +47,7 @@ DB_TOKEN=supabase api token
 ```
 
 - `AUTH_TOKEN` is the twitch auth token. You can grab one with this [link](https://twitchapps)
-- `BOT_NAME` is the username of your twitch account.
+- `BOT_NAME` is the username of your twitch account that you want to log in as
 - `STREAMER` is the channel name/streamer you want to connect the bot to
 - `DB_API_URL` is the supabase rest api url
 - `DB_TOKEN` is the supabase api token
@@ -61,7 +61,7 @@ Here is a official [guide](https://supabase.com/docs/guides/api#api-url-and-keys
 #### Setting Up Your Database
 
 The bot currently only uses the `Commands` table to look for commands. The bot 
-will first check for default commands that's been hard coded into the bot. If 
+will first check for default commands that's been hard coded. If 
 that command is not found, then it will check the database for the correct command.
 
 
