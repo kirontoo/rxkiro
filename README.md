@@ -89,6 +89,50 @@ go run main.go
 - [Go](https://go.dev/doc/install)
 - [Supabase](https://supabase.com/) - Used for serverless SQL database
 
+## Features
+
+### Command variables
+Right now, there is only 1 valid command variable `user` which will replace 
+command variable with the username of the user who invoked the command.
+
+**For Example**: 
+`!lurk` has the value of `${user} is lurking!`. The `!lurk` command will 
+replace `${user}` with a username. The output will look like this: `Kironto is lurking!`.
+
+### Random Facts
+There is a built in command for `animal facts` and `fun facts`, they are the 
+same but uses different tables depending on which type of fact you want.
+In the future I might combine these tables and add a column for 'fact type'.
+
+**Here are columns that need to be defined for these tables**:
+```json
+{
+    id: int8,
+    created_at: timestampz,
+    value: text
+}
+```
+
+These commands can be invoked in the chat with `!animalfact` or `!mefact`.
+For now, to properly use these commands, you'll need to create a custom function in `Supabase`.
+
+In the `SQL Editor` tab of the Supabase dashboard, create a new query called "Rand Animal Fact"
+and then paste this code.
+
+```sql
+create or replace function rand_animal_fact()
+returns text
+language sql
+as $$
+  SELECT value FROM "AnimalFacts" ORDER BY RANDOM() limit 1;
+$$
+```
+
+Run this query in the SQL editor and the custom function should be added to 
+your db. Do the same for the fun facts except replace `rand_animal_fact` with 
+`rand_fun_fact` and `AnimalFacts` with `FunFact`.
+
+`!animalfact` and `!mefact` commands should work now.
 
 ## License
 
