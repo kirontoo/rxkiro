@@ -9,7 +9,8 @@ var pingedCount = 0
 
 var botCommands = map[string]interface{}{
 	"ping":       ping,
-	"animalFact": randomAnimalFact,
+	"animalfact": randomAnimalFact,
+	"mefact": randomMeFact,
 }
 
 func ping(b *RxKiro) {
@@ -31,8 +32,16 @@ func ping(b *RxKiro) {
 	}
 }
 
+func randomMeFact(b *RxKiro) {
+	res := b.db.Rpc("rand_fun_fact", "exact", map[string]string{})
+	if res != "" {
+		fact := trimQuotes(res)
+		b.Log.Info().Str("fact", fact).Msg("Random animal fact")
+		b.Send(fact)
+	}
+}
+
 func randomAnimalFact(b *RxKiro) {
-	const table = "AnimalFacts"
 	res := b.db.Rpc("rand_animal_fact", "exact", map[string]string{})
 	if res != "" {
 		fact := trimQuotes(res)
