@@ -11,6 +11,7 @@ require github.com/spf13/viper v1.11.0
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/gempir/go-twitch-irc v1.1.0
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
