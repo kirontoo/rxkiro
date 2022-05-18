@@ -2,12 +2,14 @@ package bot
 
 import (
 	"encoding/json"
+	"regexp"
+	"strings"
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/config"
 	"github.com/kirontoo/rxkiro/db"
 	"github.com/rs/zerolog"
-	"github.com/supabase/postgrest-go"
+	postgrest "github.com/supabase/postgrest-go"
 )
 
 type Command struct {
@@ -65,7 +67,7 @@ func (b *RxKiro) Send(msg string) {
 	b.Client.Say(b.Config.Streamer, msg)
 }
 
-func (b *RxKiro) RunCmd(cmdName string) {
+func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 	run, ok := b.Commands[cmdName]
 	if ok {
 		b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
@@ -90,13 +92,35 @@ func (b *RxKiro) RunCmd(cmdName string) {
 				msg := b.runCounterCmd(data)
 				b.Send(msg)
 			} else if data.Value != "" {
-				b.Send(data.Value)
+				// check if any vars need to be replaced
+				r, err := regexp.Compile(`\${(.*?)}`)
+				if err != nil {
+					b.Log.Error().Err(err).Send()
+				}
+
+				matched := r.Match([]byte(data.Value))
+				if matched {
+					// b.Log.Printf("%q", r.FindString("${user} is lurking! ${hello}"))
+					matches := r.FindAllString(data.Value, -1)
+					b.Log.Print(matches)
+					// b.Log.Printf("%q", r.FindAllString(data.Value, -1))
+					username := message.User.DisplayName
+					for _, m := range matches {
+						cmdVar := strings.ToLower(strings.Trim(m, "${}"))
+						if cmdVar == "user"	 {
+							updatedMsg := strings.ReplaceAll(data.Value, m, username)
+							b.Send(updatedMsg)
+						}
+					}
+				} else {
+					b.Send(data.Value)
+				}
 			} else {
 				b.Send("There's nothing here!")
 			}
 		} else {
 			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
-			b.Send("ERR: Invalid Command. Try again.")
+			// b.Send("ERR: Invalid Command. Try again.")
 		}
 	}
 }
