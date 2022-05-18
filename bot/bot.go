@@ -2,8 +2,6 @@ package bot
 
 import (
 	"encoding/json"
-	"regexp"
-	"strings"
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/config"
@@ -70,9 +68,11 @@ func (b *RxKiro) Send(msg string) {
 func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 	run, ok := b.Commands[cmdName]
 	if ok {
+		// Execute hard coded command
 		b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
 		run.(func(*RxKiro))(b)
 	} else {
+		// Find & Execute commands from the database
 		res, _, err := b.db.From(CommandTable).Select("*", "exact", false).Eq("name", cmdName).Execute()
 		if err != nil {
 			b.Log.Error().Msg(err.Error())
@@ -93,23 +93,13 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 				b.Send(msg)
 			} else if data.Value != "" {
 				// check if any vars need to be replaced
-				r, err := regexp.Compile(`\${(.*?)}`)
-				if err != nil {
-					b.Log.Error().Err(err).Send()
-				}
-
-				matched := r.Match([]byte(data.Value))
-				if matched {
-					// b.Log.Printf("%q", r.FindString("${user} is lurking! ${hello}"))
-					matches := r.FindAllString(data.Value, -1)
-					b.Log.Print(matches)
-					// b.Log.Printf("%q", r.FindAllString(data.Value, -1))
-					username := message.User.DisplayName
+				matches := b.findCmdVars(data.Value)
+				if len(matches) > 0 {
 					for _, m := range matches {
-						cmdVar := strings.ToLower(strings.Trim(m, "${}"))
-						if cmdVar == "user"	 {
-							updatedMsg := strings.ReplaceAll(data.Value, m, username)
-							b.Send(updatedMsg)
+						// cmdVar := strings.ToLower(strings.Trim(m, "${}"))
+						newMsg := b.replaceCmdVariables(m, data.Value, message)
+						if newMsg != "" {
+							b.Send(newMsg)
 						}
 					}
 				} else {

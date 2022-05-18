@@ -32,10 +32,10 @@ func main() {
 
 	// Listen for messages
 	rxkiro.Client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		log.Info().Str("User", message.User.DisplayName).Msg("User")
+		log.Info().Str("Msg", message.Message).Msg("New Message")
 		cmd, ok := parseCommand(message.Message)
 		if ok {
-			log.Info().Str("cmd", cmd).Bool("ok", ok).Msg("New Cmd Found")
+			log.Info().Str("cmd", cmd).Bool("ok", ok).Msg("Cmd Invoked")
 			rxkiro.RunCmd(strings.ToLower(cmd), message)
 		}
 		return
@@ -56,7 +56,6 @@ func parseCommand(message string) (string, bool) {
 
 	if isCommand {
 		command := strings.TrimPrefix(messageWords[0], CMD_PREFIX)
-		log.Debug().Str("Cmd", command)
 		return command, true
 	}
 	return "", false

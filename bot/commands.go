@@ -2,7 +2,11 @@ package bot
 
 import (
 	"encoding/json"
+	"regexp"
 	"strconv"
+	"strings"
+
+	"github.com/gempir/go-twitch-irc/v3"
 )
 
 var pingedCount = 0
@@ -10,7 +14,7 @@ var pingedCount = 0
 var botCommands = map[string]interface{}{
 	"ping":       ping,
 	"animalfact": randomAnimalFact,
-	"mefact": randomMeFact,
+	"mefact":     randomMeFact,
 }
 
 func ping(b *RxKiro) {
@@ -67,4 +71,34 @@ func (b *RxKiro) runCounterCmd(data Command) string {
 
 func incrementCounter(count int64) int64 {
 	return (count + 1)
+}
+
+func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.PrivateMessage) string {
+	cmdVar := strings.ToLower(strings.Trim(rawCmd, "${}"))
+	switch cmdVar {
+	case "user":
+		username := "@" + msg.User.DisplayName
+		updatedMsg := strings.ReplaceAll(s, rawCmd, username)
+		return updatedMsg
+	case "tag":
+	default:
+		return ""
+	}
+	return ""
+}
+
+func (b *RxKiro) findCmdVars(s string) []string {
+	var matches = []string{}
+
+	r, err := regexp.Compile(`\${(.*?)}`)
+	if err != nil {
+		b.Log.Error().Err(err).Send()
+	}
+
+	matched := r.Match([]byte(s))
+	if matched {
+		matches = r.FindAllString(s, -1)
+	}
+
+	return matches
 }
