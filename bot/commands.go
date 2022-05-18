@@ -80,11 +80,19 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 		username := "@" + msg.User.DisplayName
 		updatedMsg := strings.ReplaceAll(s, rawCmd, username)
 		return updatedMsg
-	case "tag":
+	case "mention":
+		var updatedMsg string
+		m := strings.Split(msg.Message, " ")
+		if len(m) < 2 {
+			updatedMsg = strings.ReplaceAll(s, rawCmd, "")
+		} else {
+			mentionedUser := m[1]
+			updatedMsg = strings.ReplaceAll(s, rawCmd, mentionedUser)
+		}
+		return updatedMsg
 	default:
 		return ""
 	}
-	return ""
 }
 
 func (b *RxKiro) findCmdVars(s string) []string {
