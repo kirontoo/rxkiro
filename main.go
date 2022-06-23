@@ -8,11 +8,18 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/bot"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 const CMD_PREFIX = "!"
+
+type AnimalFact struct {
+	id        int64
+	CreatedAt string
+	Value     string
+}
 
 func main() {
 
@@ -28,34 +35,41 @@ func main() {
 	// Connect to IRC
 	rxkiro.Client.Join(rxkiro.Config.Streamer)
 
-	log.Info().Str("Streamer", rxkiro.Config.Streamer).Str("Bot name", rxkiro.Config.BotName).Msg("Connected to chat")
-
 	// Listen for messages
 	rxkiro.Client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		log.Info().Str("Msg", message.Message).Msg("New Message")
+		log.Info().Str("Usr", message.User.DisplayName).Str("Msg", message.Message).Msg("New Message")
 		cmd, ok := parseCommand(message.Message)
 		if ok {
 			log.Info().Str("cmd", cmd).Bool("ok", ok).Msg("Cmd Invoked")
 			rxkiro.RunCmd(strings.ToLower(cmd), message)
+		} else {
+			log.Debug().Bool("ok?", ok).Send()
 		}
 		return
 	})
 
 	ClientErr := rxkiro.Client.Connect()
-	defer rxkiro.Client.Disconnect()
+
+	// Disconnect from
+	defer rxkiro.Disconnect()
+
 	if ClientErr != nil {
 		panic(ClientErr)
+	} else {
+		log.Info().Str("Streamer", rxkiro.Config.Streamer).Str("Bot name", rxkiro.Config.BotName).Msg("Connected to chat")
 	}
 }
 
 func parseCommand(message string) (string, bool) {
 	messageWords := strings.SplitN(message, " ", 2)
+	log.Print(messageWords)
 
 	isCommand := strings.HasPrefix(messageWords[0], CMD_PREFIX)
-	// log.Debug().Str("Prefix", CMD_PREFIX).Msg("CommandPrefix")
+	log.Debug().Str("Prefix", CMD_PREFIX).Bool("isCmd", isCommand).Msg("CommandPrefix")
 
 	if isCommand {
 		command := strings.TrimPrefix(messageWords[0], CMD_PREFIX)
+		log.Debug().Str("Cmd", command).Msg("Command")
 		return command, true
 	}
 	return "", false
