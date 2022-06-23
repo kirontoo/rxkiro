@@ -15,12 +15,6 @@ import (
 
 const CMD_PREFIX = "!"
 
-type AnimalFact struct {
-	id        int64
-	CreatedAt string
-	Value     string
-}
-
 func main() {
 
 	// Enable pretty logging
@@ -50,7 +44,7 @@ func main() {
 
 	ClientErr := rxkiro.Client.Connect()
 
-	// Disconnect from
+	// Disconnect from db and twitch chat
 	defer rxkiro.Disconnect()
 
 	if ClientErr != nil {
