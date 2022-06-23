@@ -9,11 +9,12 @@ require (
 
 require github.com/spf13/viper v1.11.0
 
+require github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/gempir/go-twitch-irc v1.1.0
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/kr/pretty v0.2.0 // indirect
+	github.com/lib/pq v1.10.6
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
@@ -23,10 +24,10 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/supabase/postgrest-go v0.0.7 // indirect
+	github.com/supabase/postgrest-go v0.0.7
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
