@@ -1,16 +1,34 @@
 package bot
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/gempir/go-twitch-irc/v3"
+	"github.com/kirontoo/rxkiro/db"
 )
+
+// type Command struct {
+// 	ID        int64  `json:"id"`
+// 	Name      string `json:"name"`
+// 	Counter   int64  `json:"counter"`
+// 	Value     string `json:"value"`
+// 	IsCounter bool   `json:"isCounter"`
+// 	CreatedAt string `json:"created_at"`
+// }
+
+// type AnimalFact struct {
+// 	ID        int64  `json:"id"`
+// 	CreatedAt string `json:"created_at"`
+// 	Value     string `json:"value"`
+// }
 
 var pingedCount = 0
 
 var botCommands = map[string]interface{}{
-	"ping": ping,
+	"ping":   ping,
+	"mefact": randomMeFact,
 }
 
 func ping(b *RxKiro) {
@@ -33,23 +51,51 @@ func ping(b *RxKiro) {
 	}
 }
 
-// func randomMeFact(b *RxKiro) {
-// 	res := b.db.Rpc("rand_fun_fact", "exact", map[string]string{})
-// 	if res != "" {
-// 		fact := trimQuotes(res)
-// 		b.Log.Info().Str("fact", fact).Msg("Random animal fact")
-// 		b.Send(fact)
-// 	}
-// }
+func randomAnimalFact(b *RxKiro) {
+	query := fmt.Sprintf(`select * from "AnimalFacts" order by random() limit 1`)
+	rows, err := b.db.SqlDb.Query(query)
 
-// func randomAnimalFact(b *RxKiro) {
-// 	res := b.db.Rpc("rand_animal_fact", "exact", map[string]string{})
-// 	if res != "" {
-// 		fact := trimQuotes(res)
-// 		b.Log.Info().Str("fact", fact).Msg("Random animal fact")
-// 		b.Send(fact)
-// 	}
-// }
+	if err != nil {
+		b.Log.Fatal().Err(err).Str("cmd", "animalFact").Send()
+	}
+
+	defer rows.Close()
+
+	var fact db.FunFact
+	for rows.Next() {
+		f := db.FunFact{}
+		if err := rows.Scan(&f.Id, &f.CreatedAt, &f.Value); err != nil {
+			b.Log.Fatal().Err(err).Str("cmd", "animalFact").Msg("Random me fact")
+		}
+
+		fact = f
+	}
+
+	b.Send(fact.Value)
+}
+
+func randomMeFact(b *RxKiro) {
+	query := fmt.Sprintf(`select * from "FunFacts" order by random() limit 1`)
+	rows, err := b.db.SqlDb.Query(query)
+
+	if err != nil {
+		b.Log.Fatal().Err(err).Str("cmd", "meFact").Send()
+	}
+
+	defer rows.Close()
+
+	var fact db.FunFact
+	for rows.Next() {
+		f := db.FunFact{}
+		if err := rows.Scan(&f.Id, &f.CreatedAt, &f.Value); err != nil {
+			b.Log.Fatal().Err(err).Str("cmd", "meFact").Msg("Random me fact")
+		}
+
+		fact = f
+	}
+
+	b.Send(fact.Value)
+}
 
 // func (b *RxKiro) runCounterCmd(data Command) string {
 // 	data.Counter = incrementCounter(data.Counter)
