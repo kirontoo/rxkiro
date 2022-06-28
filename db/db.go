@@ -16,9 +16,14 @@ import (
 // 	return *dbClient
 // }
 
-func Connect(database string, connectStr string) *sql.DB {
+type Database struct {
+	SqlDb *sql.DB
+}
+
+func Connect(database string, connectStr string) *Database {
 	db, err := sql.Open(database, connectStr)
 	if err != nil {
+		log.Print("db connect: panic")
 		panic(err)
 	}
 
@@ -28,5 +33,11 @@ func Connect(database string, connectStr string) *sql.DB {
 		log.Print("Db connected")
 	}
 
-	return db
+	return &Database{
+		SqlDb: db,
+	}
+}
+
+func (db *Database) Close() {
+	db.Close()
 }
