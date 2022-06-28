@@ -27,7 +27,6 @@ func NewBot(envPath string, logger zerolog.Logger) *RxKiro {
 		logger.Fatal().Msg("Could not load env variables")
 	}
 
-	// connStr := "user=postgres password=x2yLkNsMA5ZQAig9 host=db.ddtrcmquqodwxhmkvflt.supabase.co port=5432 dbname=postgres"
 	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		botConfig.DbHost, botConfig.DbPort, botConfig.DbUser, botConfig.DbPassword, botConfig.DbName)

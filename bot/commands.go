@@ -9,21 +9,6 @@ import (
 	"github.com/kirontoo/rxkiro/db"
 )
 
-// type Command struct {
-// 	ID        int64  `json:"id"`
-// 	Name      string `json:"name"`
-// 	Counter   int64  `json:"counter"`
-// 	Value     string `json:"value"`
-// 	IsCounter bool   `json:"isCounter"`
-// 	CreatedAt string `json:"created_at"`
-// }
-
-// type AnimalFact struct {
-// 	ID        int64  `json:"id"`
-// 	CreatedAt string `json:"created_at"`
-// 	Value     string `json:"value"`
-// }
-
 var pingedCount = 0
 
 var botCommands = map[string]interface{}{
