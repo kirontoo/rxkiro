@@ -1,5 +1,6 @@
 # TODOs
 
+- [ ] TEST EVERYTHING
 - [ ] timed messages?
 - [ ] command to add a command
 - [ ] migrate to `pq` from `postgrest`?
@@ -20,3 +21,6 @@
     - [ ] pause
     - [ ] continue
     - [ ] stop
+
+## Misc
+- [ ] regex to check all messages for certain terms (i.e wos -> "did someone say wos?")
