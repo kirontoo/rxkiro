@@ -1,9 +1,11 @@
 package db
 
+import "database/sql"
+
 type Command struct {
 	Id        int64
 	Name      string
-	Counter   *int64
+	Counter   sql.NullInt64
 	Value     string
 	IsCounter bool
 	CreatedAt string
