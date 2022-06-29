@@ -5,17 +5,6 @@ import (
 	"log"
 )
 
-// func Connect(url string, token string) postgrest.Client {
-// 	dbClient := postgrest.NewClient(url, "", nil)
-// 	if dbClient.ClientError != nil {
-// 		panic(dbClient.ClientError)
-// 	}
-
-// 	dbClient = dbClient.TokenAuth(token)
-
-// 	return *dbClient
-// }
-
 type Database struct {
 	SqlDb *sql.DB
 }

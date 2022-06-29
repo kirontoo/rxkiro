@@ -82,23 +82,22 @@ func randomMeFact(b *RxKiro) {
 	b.Send(fact.Value)
 }
 
-// func (b *RxKiro) runCounterCmd(data Command) string {
-// 	data.Counter = incrementCounter(data.Counter)
-// 	b.Log.Debug().Int64("counter", data.Counter).Msg("Should increment")
-// 	updatedRes, _, err := b.db.From(CommandTable).Update(data, "representation", "exact").Eq("name", data.Name).Execute()
+func (b *RxKiro) runCounter(cmd db.Command) string {
+	if cmd.Counter.Valid {
+		count := cmd.Counter.Int64 + 1
+		// update in db
+		_, err := b.db.SqlDb.Exec(fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, cmd.Id))
+		if err != nil {
+			b.Log.Error().Msg("Could not update counter.")
+			return fmt.Sprintf("Could not update counter: %s", cmd.Name)
+		}
 
-// 	var jsonRes Command
-// 	json.Unmarshal(updatedRes, &jsonRes)
-// 	if err != nil {
-// 		b.Log.Error().Interface("Command", jsonRes).Msg("Error updating")
-// 		b.Log.Error().Err(err)
-// 	}
+		b.Log.Info().Int64("new_count", count).Int64("old_count", cmd.Counter.Int64).Str("cmd", cmd.Name).Msg("Update counter")
 
-// 	return data.Name + ": " + strconv.Itoa(int(data.Counter))
-// }
+		return fmt.Sprintf("%s: %d", cmd.Value, count)
+	}
 
-func incrementCounter(count int64) int64 {
-	return (count + 1)
+	return fmt.Sprintf("Invalid counter: %s", cmd.Name)
 }
 
 func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.PrivateMessage) string {

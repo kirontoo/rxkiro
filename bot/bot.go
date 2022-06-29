@@ -111,13 +111,11 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 				b.Send(cmd.Value)
 			}
 		} else if cmd.IsCounter {
-			// TODO
-			// msg := b.runCounterCmd(data)
-			// b.Send(msg)
-			b.Log.Debug().Str("cmd", cmd.Name).Msg("WIP")
+			msg := b.runCounter(cmd)
+			b.Send(msg)
 		} else {
 			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
-			// b.Send("ERR: Invalid Command. Try again.")
+			b.Send("ERR: Invalid Command. Try again.")
 		}
 	}
 }
