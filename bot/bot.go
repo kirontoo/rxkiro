@@ -27,17 +27,29 @@ func NewBot(envPath string, logger zerolog.Logger) *RxKiro {
 		logger.Fatal().Msg("Could not load env variables")
 	}
 
-	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		botConfig.DbHost, botConfig.DbPort, botConfig.DbUser, botConfig.DbPassword, botConfig.DbName)
-
 	return &RxKiro{
 		Log:      logger,
 		Config:   botConfig,
 		Client:   twitch.NewClient(botConfig.BotName, botConfig.AuthToken),
-		db:       db.Connect("postgres", connStr),
+		db:       nil,
 		Commands: botCommands,
 	}
+}
+
+func (b *RxKiro) Connect() {
+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		b.Config.DbHost, b.Config.DbPort, b.Config.DbUser, b.Config.DbPassword, b.Config.DbName)
+	b.db = db.Connect("postgres", connStr)
+
+	twtErr := b.Client.Connect()
+	if twtErr != nil {
+		b.Log.Panic().Msg(twtErr.Error())
+	} else {
+		log.Info().Str("Streamer", b.Config.Streamer).Str("Bot name", b.Config.BotName).Msg("Connected to chat")
+	}
+
 }
 
 func trimQuotes(s string) string {

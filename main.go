@@ -42,16 +42,10 @@ func main() {
 		return
 	})
 
-	ClientErr := rxkiro.Client.Connect()
+	rxkiro.Connect()
 
 	// Disconnect from db and twitch chat
 	defer rxkiro.Disconnect()
-
-	if ClientErr != nil {
-		panic(ClientErr)
-	} else {
-		log.Info().Str("Streamer", rxkiro.Config.Streamer).Str("Bot name", rxkiro.Config.BotName).Msg("Connected to chat")
-	}
 }
 
 func parseCommand(message string) (string, bool) {
