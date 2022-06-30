@@ -94,7 +94,7 @@ func (b *RxKiro) runCounter(cmd db.Command) string {
 
 		b.Log.Info().Int64("new_count", count).Int64("old_count", cmd.Counter.Int64).Str("cmd", cmd.Name).Msg("Update counter")
 
-		return fmt.Sprintf("%s: %d", cmd.Value, count)
+		return fmt.Sprintf("%s: %d", cmd.Name, count)
 	}
 
 	return fmt.Sprintf("Invalid counter: %s", cmd.Name)
