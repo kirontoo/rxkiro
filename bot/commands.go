@@ -2,8 +2,11 @@ package bot
 
 import (
 	"fmt"
+	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/db"
@@ -101,7 +104,13 @@ func (b *RxKiro) runCounter(cmd db.Command) string {
 }
 
 func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.PrivateMessage) string {
-	cmdVar := strings.ToLower(strings.Trim(rawCmd, "${}"))
+	raw := strings.ToLower(strings.Trim(rawCmd, "${}"))
+	cmdVars := strings.Split(raw, " ")
+	cmdVar := cmdVars[0]
+
+	b.Log.Debug().Str("cmdvar", cmdVar).Send()
+	b.Log.Print(cmdVars)
+
 	switch cmdVar {
 	case "user":
 		username := "@" + msg.User.DisplayName
@@ -111,15 +120,31 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 		var updatedMsg string
 		m := strings.Split(msg.Message, " ")
 		if len(m) < 2 {
-			// TODO: what if there was no username mention?
-			// should be a better response for this
-			// respond with a !ERR: no mention found
 			updatedMsg = strings.ReplaceAll(s, rawCmd, "")
 		} else {
 			mentionedUser := m[1]
 			updatedMsg = strings.ReplaceAll(s, rawCmd, mentionedUser)
 		}
 		return updatedMsg
+	case "random":
+		if len(cmdVars) == 3 {
+			// Has to be 3 for format: ${random minNum maxNum}
+			max, err := strconv.Atoi(cmdVars[2])
+			if err != nil {
+				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
+				return fmt.Sprintf("Invalid param: %s. Must be in a number", cmdVars[2])
+			}
+
+			min, err := strconv.Atoi(cmdVars[1])
+			if err != nil {
+				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
+				return fmt.Sprintf("Invalid param: %s. Must be in a number", cmdVars[1])
+			}
+
+			return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", randNum(min, max)))
+		}
+
+		return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", randNum()))
 	default:
 		return ""
 	}
@@ -139,4 +164,16 @@ func (b *RxKiro) findCmdVars(s string) []string {
 	}
 
 	return matches
+}
+
+func randNum(randRange ...int) int {
+	rand.Seed(time.Now().UnixNano())
+	size := len(randRange)
+	if size >= 2 {
+		var min, max = randRange[0], randRange[1]
+		randomNum := rand.Intn(max-min) + min
+		return randomNum
+	}
+
+	return rand.Intn(100000-0) + 0
 }
