@@ -115,21 +115,22 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 		}
 		return updatedMsg
 	case "random":
+		value := randNum()
 		if len(cmdVars) == 3 {
 			// Has to be 3 for format: ${random minNum maxNum}
 			max, err := strconv.Atoi(cmdVars[2])
 			if err != nil {
 				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
-				return fmt.Sprintf("Invalid param: %s. Must be in a number", cmdVars[2])
+				return fmt.Sprintf("Invalid param: %s. Must be a number", cmdVars[2])
 			}
 
 			min, err := strconv.Atoi(cmdVars[1])
 			if err != nil {
 				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
-				return fmt.Sprintf("Invalid param: %s. Must be in a number", cmdVars[1])
+				return fmt.Sprintf("Invalid param: %s. Must be a number", cmdVars[1])
 			}
 
-			if max < 0 || min < 0 {
+			if !isValidInt(max) || !isValidInt(min) {
 				return "Invalid range value, should be greater or equal to 0"
 			}
 
@@ -137,10 +138,24 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 				return fmt.Sprintf("Invalid max value, %d, should be less than %d", max, min)
 			}
 
-			return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", randNum(min, max)))
+			value = randNum(min, max)
 		}
 
-		return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", randNum()))
+		if len(cmdVars) == 2 {
+			max, err := strconv.Atoi(cmdVars[1])
+			if err != nil {
+				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
+				return fmt.Sprintf("Invalid param: %s. Must be a number", cmdVars[1])
+			}
+
+			if !isValidInt(max) {
+				return "Invalid range value, should be greater or equal to 0"
+			}
+
+			value = randNum(max)
+		}
+
+		return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", value))
 	default:
 		return ""
 	}
@@ -171,5 +186,14 @@ func randNum(randRange ...int) int {
 		return randomNum
 	}
 
-	return rand.Intn(100000-0) + 0
+	if size == 1 {
+		max := randRange[0]
+		return rand.Intn(max)
+	}
+
+	return rand.Intn(100000)
+}
+
+func isValidInt(n int) bool {
+	return !(n < 0)
 }
