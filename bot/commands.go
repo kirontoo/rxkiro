@@ -129,6 +129,14 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 				return fmt.Sprintf("Invalid param: %s. Must be in a number", cmdVars[1])
 			}
 
+			if max < 0 || min < 0 {
+				return "Invalid range value, should be greater or equal to 0"
+			}
+
+			if max < min {
+				return fmt.Sprintf("Invalid max value, %d, should be less than %d", max, min)
+			}
+
 			return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", randNum(min, max)))
 		}
 
