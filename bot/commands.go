@@ -15,8 +15,9 @@ import (
 var pingedCount = 0
 
 var botCommands = map[string]interface{}{
-	"ping":   ping,
-	"mefact": randomMeFact,
+	"ping":       ping,
+	"mefact":     randomMeFact,
+	"animalfact": randomAnimalFact,
 }
 
 func ping(b *RxKiro) {
@@ -39,8 +40,8 @@ func ping(b *RxKiro) {
 	}
 }
 
-func randomAnimalFact(b *RxKiro) {
-	query := fmt.Sprintf(`select * from "AnimalFacts" order by random() limit 1`)
+func randomFact(b *RxKiro, table string) string {
+	query := fmt.Sprintf(`select * from "%s" order by random() limit 1`, table)
 	rows, err := b.db.SqlDb.Query(query)
 
 	if err != nil {
@@ -53,36 +54,23 @@ func randomAnimalFact(b *RxKiro) {
 	for rows.Next() {
 		f := db.FunFact{}
 		if err := rows.Scan(&f.Id, &f.CreatedAt, &f.Value); err != nil {
-			b.Log.Fatal().Err(err).Str("cmd", "animalFact").Msg("Random me fact")
+			b.Log.Fatal().Err(err).Msg("finding random fact")
 		}
 
 		fact = f
 	}
 
-	b.Send(fact.Value)
+	return fact.Value
+}
+
+func randomAnimalFact(b *RxKiro) {
+	msg := randomFact(b, "AnimalFacts")
+	b.Send(msg)
 }
 
 func randomMeFact(b *RxKiro) {
-	query := fmt.Sprintf(`select * from "FunFacts" order by random() limit 1`)
-	rows, err := b.db.SqlDb.Query(query)
-
-	if err != nil {
-		b.Log.Fatal().Err(err).Str("cmd", "meFact").Send()
-	}
-
-	defer rows.Close()
-
-	var fact db.FunFact
-	for rows.Next() {
-		f := db.FunFact{}
-		if err := rows.Scan(&f.Id, &f.CreatedAt, &f.Value); err != nil {
-			b.Log.Fatal().Err(err).Str("cmd", "meFact").Msg("Random me fact")
-		}
-
-		fact = f
-	}
-
-	b.Send(fact.Value)
+	msg := randomFact(b, "FunFacts")
+	b.Send(msg)
 }
 
 func (b *RxKiro) runCounter(cmd db.Command) string {
