@@ -6,7 +6,7 @@ import (
 )
 
 type Database struct {
-	SqlDb *sql.DB
+	Store *sql.DB
 }
 
 func Connect(database string, connectStr string) *Database {
@@ -23,7 +23,7 @@ func Connect(database string, connectStr string) *Database {
 	}
 
 	return &Database{
-		SqlDb: db,
+		Store: db,
 	}
 }
 

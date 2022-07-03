@@ -82,7 +82,7 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 		query := fmt.Sprintf(`select * from "Commands" where name = '%s' LIMIT 1`, cmdName)
 		b.Log.Print(query)
 
-		rows, err := b.db.SqlDb.Query(query)
+		rows, err := b.db.Store.Query(query)
 		if err != nil {
 			b.Log.Fatal().Err(err).Str("cmd", cmdName).Send()
 		} else {
@@ -100,8 +100,7 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 				b.Log.Fatal().Err(err).Str("cmd", cmdName).Msg("DB Query")
 			}
 
-			log.Printf("id: %d, name; %s, value; %s", rowCmd.Id, rowCmd.Name, rowCmd.Value)
-			b.Log.Info().Str("cmd", rowCmd.Name).Str("value", rowCmd.Value).Bool("isCounter", rowCmd.IsCounter).Msg("found command")
+			b.Log.Info().Int64("id", rowCmd.Id).Str("cmd", rowCmd.Name).Str("value", rowCmd.Value).Bool("isCounter", rowCmd.IsCounter).Msg("found command")
 
 			if rowCmd.Name == cmdName {
 				cmd = rowCmd
