@@ -42,7 +42,7 @@ func ping(b *RxKiro) {
 
 func randomFact(b *RxKiro, table string) string {
 	query := fmt.Sprintf(`select * from "%s" order by random() limit 1`, table)
-	rows, err := b.db.SqlDb.Query(query)
+	rows, err := b.db.Store.Query(query)
 
 	if err != nil {
 		b.Log.Fatal().Err(err).Str("cmd", "animalFact").Send()
@@ -77,7 +77,7 @@ func (b *RxKiro) runCounter(cmd db.Command) string {
 	if cmd.Counter.Valid {
 		count := cmd.Counter.Int64 + 1
 		// update in db
-		_, err := b.db.SqlDb.Exec(fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, cmd.Id))
+		_, err := b.db.Store.Exec(fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, cmd.Id))
 		if err != nil {
 			b.Log.Error().Msg("Could not update counter.")
 			return fmt.Sprintf("Could not update counter: %s", cmd.Name)
