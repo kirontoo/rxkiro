@@ -75,16 +75,7 @@ func randomMeFact(b *RxKiro) {
 
 func (b *RxKiro) updateCounter(cmd db.Command) string {
 	if cmd.Counter.Valid {
-		count := cmd.Counter.Int64 + 1
-		// update in db
-		_, err := b.db.Store.Exec(fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, cmd.Id))
-		if err != nil {
-			b.Log.Error().Msg("Could not update counter.")
-			return fmt.Sprintf("Could not update counter: %s", cmd.Name)
-		}
-
-		b.Log.Info().Int64("new_count", count).Int64("old_count", cmd.Counter.Int64).Str("cmd", cmd.Name).Msg("Update counter")
-
+		count := b.db.IncrementCounter(cmd.Id, cmd.Counter.Int64)
 		return fmt.Sprintf("%s: %d", cmd.Name, count)
 	}
 
@@ -203,7 +194,7 @@ func randomCmd(s string, rawCmd string) string {
 	}
 
 	if len(cmdVars) == 2 {
-		max, err := convertToInt(cmdVars[2])
+		max, err := convertToInt(cmdVars[1])
 		if len(err) > 0 {
 			return err
 		}
