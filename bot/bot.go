@@ -95,7 +95,7 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 					b.Send(cmd.Value)
 				}
 			} else {
-				msg := b.runCounter(cmd)
+				msg := b.updateCounter(cmd)
 				b.Send(msg)
 			}
 		} else {

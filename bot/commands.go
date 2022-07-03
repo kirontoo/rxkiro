@@ -73,7 +73,7 @@ func randomMeFact(b *RxKiro) {
 	b.Send(msg)
 }
 
-func (b *RxKiro) runCounter(cmd db.Command) string {
+func (b *RxKiro) updateCounter(cmd db.Command) string {
 	if cmd.Counter.Valid {
 		count := cmd.Counter.Int64 + 1
 		// update in db
