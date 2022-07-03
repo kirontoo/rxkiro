@@ -45,3 +45,14 @@ func (db *Database) GetCommandByName(name string) Command {
 
 	return cmd
 }
+
+func (db *Database) IncrementCounter(id int64, count int64) int64 {
+	count = count + 1
+
+	_, err := db.Store.Exec(fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, id))
+	if err != nil {
+		log.Logger.Error().Err(err).Send()
+	}
+
+	return count
+}
