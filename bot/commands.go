@@ -48,9 +48,9 @@ func randomFact(b *RxKiro, table string) string {
 
 	defer rows.Close()
 
-	var fact db.FunFact
+	var fact db.Fact
 	for rows.Next() {
-		f := db.FunFact{}
+		f := db.Fact{}
 		if err := rows.Scan(&f.Id, &f.CreatedAt, &f.Value); err != nil {
 			b.Log.Fatal().Err(err).Msg("finding random fact")
 		}

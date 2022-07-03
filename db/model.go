@@ -11,13 +11,9 @@ type Command struct {
 	CreatedAt string
 }
 
-type FunFact struct {
-	Id        int64
-	CreatedAt string
-	Value     string
-}
+// TODO: FunFact and AnimalFact can be merged to one struct called Fact
 
-type AnimalFact struct {
+type Fact struct {
 	Id        int64
 	CreatedAt string
 	Value     string
