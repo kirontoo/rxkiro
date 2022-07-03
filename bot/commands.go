@@ -115,47 +115,7 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 		}
 		return updatedMsg
 	case "random":
-		value := randNum()
-		if len(cmdVars) == 3 {
-			// Has to be 3 for format: ${random minNum maxNum}
-			max, err := strconv.Atoi(cmdVars[2])
-			if err != nil {
-				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
-				return fmt.Sprintf("Invalid param: %s. Must be a number", cmdVars[2])
-			}
-
-			min, err := strconv.Atoi(cmdVars[1])
-			if err != nil {
-				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
-				return fmt.Sprintf("Invalid param: %s. Must be a number", cmdVars[1])
-			}
-
-			if !isValidInt(max) || !isValidInt(min) {
-				return "Invalid range value, should be greater or equal to 0"
-			}
-
-			if max < min {
-				return fmt.Sprintf("Invalid max value, %d, should be less than %d", max, min)
-			}
-
-			value = randNum(min, max)
-		}
-
-		if len(cmdVars) == 2 {
-			max, err := strconv.Atoi(cmdVars[1])
-			if err != nil {
-				b.Log.Error().Str("cmd", cmdVar).Msg("Invalid params")
-				return fmt.Sprintf("Invalid param: %s. Must be a number", cmdVars[1])
-			}
-
-			if !isValidInt(max) {
-				return "Invalid range value, should be greater or equal to 0"
-			}
-
-			value = randNum(max)
-		}
-
-		return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", value))
+		return randomCmd(s, rawCmd)
 	default:
 		return ""
 	}
@@ -177,6 +137,14 @@ func (b *RxKiro) findCmdVars(s string) []string {
 	return matches
 }
 
+/**
+can take 0 to 2 parameters
+if no parameter given, randNum will return a random number from 0 to 100000
+if 1 parameter, n, given, randNum will return a random number from 0 to n
+if 2 parameters, min and max, given, randNum will return a random number from min to max
+
+If more than 2 parametrs is given, they will be ignored.
+*/
 func randNum(randRange ...int) int {
 	rand.Seed(time.Now().UnixNano())
 	size := len(randRange)
@@ -194,6 +162,58 @@ func randNum(randRange ...int) int {
 	return rand.Intn(100000)
 }
 
-func isValidInt(n int) bool {
+func isPositiveInt(n int) bool {
 	return !(n < 0)
+}
+
+func convertToInt(n string) (int, string) {
+	value, err := strconv.Atoi(n)
+	if err != nil {
+		return -1, fmt.Sprintf("Invalid param: %s. Must be a number", n)
+	}
+
+	return value, ""
+}
+
+func randomCmd(s string, rawCmd string) string {
+	raw := strings.ToLower(strings.Trim(rawCmd, "${}"))
+	cmdVars := strings.Split(raw, " ")
+
+	value := randNum()
+	if len(cmdVars) == 3 {
+		max, err := convertToInt(cmdVars[2])
+		if len(err) > 0 {
+			return err
+		}
+
+		min, err := convertToInt(cmdVars[1])
+		if len(err) > 0 {
+			return err
+		}
+
+		if !isPositiveInt(max) || !isPositiveInt(min) {
+			return "Invalid range value, should be greater or equal to 0"
+		}
+
+		if max < min {
+			return fmt.Sprintf("Invalid max value, %d, should be less than %d", max, min)
+		}
+
+		value = randNum(min, max)
+	}
+
+	if len(cmdVars) == 2 {
+		max, err := convertToInt(cmdVars[2])
+		if len(err) > 0 {
+			return err
+		}
+
+		if !isPositiveInt(max) {
+			return "Invalid range value, should be greater or equal to 0"
+		}
+
+		value = randNum(max)
+	}
+
+	return strings.ReplaceAll(s, rawCmd, fmt.Sprintf("%d", value))
 }
