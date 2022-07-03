@@ -2,7 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Database struct {
@@ -29,4 +31,17 @@ func Connect(database string, connectStr string) *Database {
 
 func (db *Database) Close() {
 	db.Close()
+}
+
+func (db *Database) GetCommandByName(name string) Command {
+	query := fmt.Sprintf(`SELECT * from "Commands" WHERE name = '%s' LIMIT 1`, name)
+	row := db.Store.QueryRow(query)
+
+	cmd := Command{}
+
+	if err := row.Scan(&cmd.Id, &cmd.CreatedAt, &cmd.Name, &cmd.Counter, &cmd.Value, &cmd.IsCounter); err != nil {
+		log.Logger.Error().Err(err).Send()
+	}
+
+	return cmd
 }

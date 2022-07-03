@@ -79,54 +79,28 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 		b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
 		run.(func(*RxKiro))(b)
 	} else {
-		query := fmt.Sprintf(`select * from "Commands" where name = '%s' LIMIT 1`, cmdName)
-		b.Log.Print(query)
-
-		rows, err := b.db.Store.Query(query)
-		if err != nil {
-			b.Log.Fatal().Err(err).Str("cmd", cmdName).Send()
-		} else {
-			b.Log.Info().Str("cmd", cmdName).Msg("cmd found in db")
-			b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
-		}
-
-		defer rows.Close()
-
-		var cmd db.Command
-
-		for rows.Next() {
-			rowCmd := db.Command{}
-			if err := rows.Scan(&rowCmd.Id, &rowCmd.CreatedAt, &rowCmd.Name, &rowCmd.Counter, &rowCmd.Value, &rowCmd.IsCounter); err != nil {
-				b.Log.Fatal().Err(err).Str("cmd", cmdName).Msg("DB Query")
-			}
-
-			b.Log.Info().Int64("id", rowCmd.Id).Str("cmd", rowCmd.Name).Str("value", rowCmd.Value).Bool("isCounter", rowCmd.IsCounter).Msg("found command")
-
-			if rowCmd.Name == cmdName {
-				cmd = rowCmd
-			}
-		}
-
-		if !cmd.IsCounter {
-			// Command is not a counter
-			// check if any vars need to be replaced
-			matches := b.findCmdVars(cmd.Value)
-			if len(matches) > 0 {
-				for _, m := range matches {
-					newMsg := b.replaceCmdVariables(m, cmd.Value, message)
-					if newMsg != "" {
-						b.Send(newMsg)
+		cmd := b.db.GetCommandByName(cmdName)
+		if cmd.Name == cmdName {
+			if !cmd.IsCounter {
+				// check if any cmd vars need to be replaced
+				matches := b.findCmdVars(cmd.Value)
+				if len(matches) > 0 {
+					for _, m := range matches {
+						newMsg := b.replaceCmdVariables(m, cmd.Value, message)
+						if newMsg != "" {
+							b.Send(newMsg)
+						}
 					}
+				} else {
+					b.Send(cmd.Value)
 				}
 			} else {
-				b.Send(cmd.Value)
+				msg := b.runCounter(cmd)
+				b.Send(msg)
 			}
-		} else if cmd.IsCounter {
-			msg := b.runCounter(cmd)
-			b.Send(msg)
 		} else {
-			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
 			b.Send("ERR: Invalid Command. Try again.")
+			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
 		}
 	}
 }
