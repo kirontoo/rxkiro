@@ -3,12 +3,10 @@ package bot
 import (
 	"fmt"
 	"math/rand"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/db"
 )
 
@@ -71,61 +69,6 @@ func randomAnimalFact(b *RxKiro) {
 func randomMeFact(b *RxKiro) {
 	msg := randomFact(b, "FunFacts")
 	b.Send(msg)
-}
-
-func (b *RxKiro) updateCounter(cmd db.Command) string {
-	if cmd.Counter.Valid {
-		count := b.db.IncrementCounter(cmd.Id, cmd.Counter.Int64)
-		return fmt.Sprintf("%s: %d", cmd.Name, count)
-	}
-
-	return fmt.Sprintf("Invalid counter: %s", cmd.Name)
-}
-
-func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.PrivateMessage) string {
-	raw := strings.ToLower(strings.Trim(rawCmd, "${}"))
-	cmdVars := strings.Split(raw, " ")
-	cmdVar := cmdVars[0]
-
-	b.Log.Debug().Str("cmdvar", cmdVar).Send()
-	b.Log.Print(cmdVars)
-
-	switch cmdVar {
-	case "user":
-		username := "@" + msg.User.DisplayName
-		updatedMsg := strings.ReplaceAll(s, rawCmd, username)
-		return updatedMsg
-	case "mention":
-		var updatedMsg string
-		m := strings.Split(msg.Message, " ")
-		if len(m) < 2 {
-			updatedMsg = strings.ReplaceAll(s, rawCmd, "")
-		} else {
-			mentionedUser := m[1]
-			updatedMsg = strings.ReplaceAll(s, rawCmd, mentionedUser)
-		}
-		return updatedMsg
-	case "random":
-		return randomCmd(s, rawCmd)
-	default:
-		return ""
-	}
-}
-
-func (b *RxKiro) findCmdVars(s string) []string {
-	var matches = []string{}
-
-	r, err := regexp.Compile(`\${(.*?)}`)
-	if err != nil {
-		b.Log.Error().Err(err).Send()
-	}
-
-	matched := r.Match([]byte(s))
-	if matched {
-		matches = r.FindAllString(s, -1)
-	}
-
-	return matches
 }
 
 /**
