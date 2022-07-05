@@ -2,8 +2,8 @@ package bot
 
 import (
 	"fmt"
-	"strings"
 	"regexp"
+	"strings"
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/kirontoo/rxkiro/config"
@@ -87,12 +87,12 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 				// check if any cmd vars need to be replaced
 				matches := b.findCmdVars(cmd.Value)
 				if len(matches) > 0 {
+					updatedMsg := cmd.Value
 					for _, m := range matches {
-						newMsg := b.replaceCmdVariables(m, cmd.Value, message)
-						if newMsg != "" {
-							b.Send(newMsg)
-						}
+						updatedMsg = b.replaceCmdVariables(m, updatedMsg, message)
 					}
+
+					b.Send(updatedMsg)
 				} else {
 					b.Send(cmd.Value)
 				}
@@ -161,4 +161,3 @@ func (b *RxKiro) findCmdVars(s string) []string {
 
 	return matches
 }
-
