@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/rs/zerolog/log"
@@ -33,7 +34,7 @@ func (db *Database) Close() {
 	db.Close()
 }
 
-func (db *Database) GetCommandByName(name string) Command {
+func (db *Database) GetCommandByName(name string) (*Command, error) {
 	query := fmt.Sprintf(`SELECT * from "Commands" WHERE name = '%s' LIMIT 1`, name)
 	row := db.Store.QueryRow(query)
 
@@ -41,9 +42,10 @@ func (db *Database) GetCommandByName(name string) Command {
 
 	if err := row.Scan(&cmd.Id, &cmd.CreatedAt, &cmd.Name, &cmd.Counter, &cmd.Value, &cmd.IsCounter); err != nil {
 		log.Logger.Error().Err(err).Send()
+		return nil, errors.New(fmt.Sprintf("Command, %s, does not exist in databse", name))
 	}
 
-	return cmd
+	return &cmd, nil
 }
 
 func (db *Database) IncrementCounter(id int64, count int64) int64 {
@@ -53,6 +55,60 @@ func (db *Database) IncrementCounter(id int64, count int64) int64 {
 	if err != nil {
 		log.Logger.Error().Err(err).Send()
 	}
-
 	return count
+}
+
+func (db *Database) AddCommand(name string, value string) string {
+	cmd, _ := db.GetCommandByName(name)
+
+	if cmd != nil {
+		return fmt.Sprintf("What are you doing!? Command '%s' already exists!", name)
+	}
+
+	query := fmt.Sprintf(`
+	INSERT INTO "Commands" (
+		name,
+		value,
+	)
+	VALUES (
+		%s,
+		%s,
+	)`, name, value)
+
+	_, err := db.Store.Exec(query)
+	if err != nil {
+		log.Logger.Error().Err(err).Send()
+		return "ERR: Could not create a new command. Contact the admin."
+	}
+
+	return fmt.Sprintf("New command added: %s", name)
+}
+
+func (db *Database) EditCommand(name string, value string) string {
+	return ""
+}
+
+// TODO: test this
+func (db *Database) AddCounter(name string) string {
+	query := fmt.Sprintf(`
+	INSERT INTO "Commands" (
+		name,
+		counter,
+		value,
+		isCounter,
+	)
+	VALUES (
+		%s,
+		0,
+		"",
+		true
+	)`, name)
+
+	_, err := db.Store.Exec(query)
+	if err != nil {
+		log.Logger.Error().Err(err).Send()
+		return "ERR: Could not create a new counter. Contact the admin."
+	}
+
+	return fmt.Sprintf("New counter added: %s", name)
 }

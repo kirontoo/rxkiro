@@ -39,7 +39,6 @@ func main() {
 		} else {
 			log.Debug().Bool("ok?", ok).Send()
 		}
-		return
 	})
 
 	rxkiro.Connect()

@@ -81,8 +81,8 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 		b.Log.Info().Str("cmd", cmdName).Msg("Executing Cmd")
 		run.(func(*RxKiro))(b)
 	} else {
-		cmd := b.db.GetCommandByName(cmdName)
-		if cmd.Name == cmdName {
+		cmd, _ := b.db.GetCommandByName(cmdName)
+		if cmd != nil && cmd.Name == cmdName {
 			if !cmd.IsCounter {
 				// check if any cmd vars need to be replaced
 				matches := b.findCmdVars(cmd.Value)
@@ -107,7 +107,7 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 	}
 }
 
-func (b *RxKiro) updateCounter(cmd db.Command) string {
+func (b *RxKiro) updateCounter(cmd *db.Command) string {
 	if cmd.Counter.Valid {
 		count := b.db.IncrementCounter(cmd.Id, cmd.Counter.Int64)
 		return fmt.Sprintf("%s: %d", cmd.Name, count)
