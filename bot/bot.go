@@ -82,7 +82,7 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 		run.(func(*RxKiro))(b)
 	} else {
 		cmd, _ := b.db.GetCommandByName(cmdName)
-		if cmd != nil && cmd.Name == cmdName {
+		if cmd != nil {
 			if !cmd.IsCounter {
 				// check if any cmd vars need to be replaced
 				matches := b.findCmdVars(cmd.Value)

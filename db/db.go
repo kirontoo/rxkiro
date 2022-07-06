@@ -45,6 +45,10 @@ func (db *Database) GetCommandByName(name string) (*Command, error) {
 		return nil, errors.New(fmt.Sprintf("Command, %s, does not exist in databse", name))
 	}
 
+	if cmd.Name != name {
+		return nil, fmt.Errorf("Command, %s, does not exist in databse", name)
+	}
+
 	return &cmd, nil
 }
 
