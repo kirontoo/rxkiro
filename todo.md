@@ -5,8 +5,9 @@
 - [ ] TEST EVERYTHING
 - [ ] timed messages?
 - [ ] command to add a command
-- [ ] migrate to `pq` from `postgrest`?
-- [ ] BUG: not returning an error message when a command does not exist
+- [x] BUG: not returning an error message when a command does not exist
+- [x] BUG: cmd vars do not stack -> will only replace one of them, not all
+- [ ] Merge Tables "AnimalFact" and "FunFact"
 
 ## Command Variables
 - [ ] `mention` and `user` vars - add a `@` check for users
@@ -15,10 +16,11 @@
 - [x] ${random 200} - random number from 0 to 200
 - [x] ${random} - any random number (default from 0 to 100000)
 - [ ] !song - [spotify api: now playing](https://developer.spotify.com/documentation/web-api/reference/#/operations/get-the-users-currently-playing-track)
-- [ ] !cmd options
-    - [ ] add
-    - [ ] delete
-    - [ ] edit
+- [] !cmd options
+    - [x] add
+    - [x] delete
+    - [x] edit
+    - [ ] restrict access to this command to only the streamer or the mods
 - [ ] !help
 - [ ] !timer
     - [ ] start
