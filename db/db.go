@@ -63,9 +63,8 @@ func (db *Database) IncrementCounter(id int64, count int64) int64 {
 }
 
 func (db *Database) AddCommand(name string, value string) string {
-	cmd, _ := db.GetCommandByName(name)
-
-	if cmd != nil {
+	exists := db.CommandExists(name)
+	if !exists {
 		return fmt.Sprintf("What are you doing!? Command '%s' already exists!", name)
 	}
 
@@ -89,10 +88,37 @@ func (db *Database) AddCommand(name string, value string) string {
 }
 
 func (db *Database) EditCommand(name string, value string) string {
-	return ""
+	exists := db.CommandExists(name)
+	if !exists {
+		return fmt.Sprintf("Command '%s' doesn't exist", name)
+	}
+
+	query := fmt.Sprintf(`UPDATE "Commands" SET value = '%s' WHERE name = '%s'`, value, name)
+	_, err := db.Store.Exec(query)
+	if err != nil {
+		log.Logger.Error().Err(err).Send()
+		return "ERR Code 500. Amy go fix this."
+	}
+
+	return fmt.Sprintf("!%s was updated", name)
 }
 
-// TODO: test this
+func (db *Database) DeleteCommand(name string) string {
+	query := fmt.Sprintf(`DELETE FROM "Commands" WHERE name = '%s'`, name)
+	_, err := db.Store.Exec(query)
+	if err != nil {
+		log.Logger.Error().Err(err).Send()
+		return fmt.Sprintf("ERR: Could not delete command %s", name)
+	}
+
+	return fmt.Sprintf("!%s was deleted", name)
+}
+
+func (db *Database) CommandExists(name string) bool {
+	_, cmdErr := db.GetCommandByName(name)
+	return cmdErr == nil
+}
+
 func (db *Database) AddCounter(name string) string {
 	query := fmt.Sprintf(`
 	INSERT INTO "Commands" (
