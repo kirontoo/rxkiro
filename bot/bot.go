@@ -75,6 +75,10 @@ func (b *RxKiro) Send(msg string) {
 
 func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 	run, ok := b.Commands[cmdName]
+	if cmdName == "cmd" {
+		b.Send(b.handleCommandActions(message))
+		return
+	}
 
 	if ok {
 		// Execute hard coded command
@@ -105,6 +109,45 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 			b.Log.Error().Str("cmd", cmdName).Msg("Invalid Cmd")
 		}
 	}
+}
+
+func (b *RxKiro) handleCommandActions(msg twitch.PrivateMessage) string {
+	// ["!cmd", "add", "cmdname", "some", "words", "here"]
+	raw := strings.Split(msg.Message, " ")
+	params := len(raw)
+
+	errorMsg := "ERR: Invalid syntax. Try !cmd add test this is a test command LUL"
+	if params < 3 {
+		return errorMsg
+	}
+
+	action := raw[1]
+	name := strings.ToLower(raw[2])
+	rawMessage := strings.Join(raw[3:], " ")
+
+	if (name == "add" || name == "edit") && params < 4 {
+		return errorMsg
+	}
+
+	b.Log.Debug().Str("cmd action", action).Str("name", name).Str("value", rawMessage).Msg("")
+
+	switch action {
+	case "add":
+		output := b.db.AddCommand(name, rawMessage)
+		b.Send(output)
+	case "edit":
+		return b.db.EditCommand(name, rawMessage)
+	case "delete":
+		if params < 3 {
+			return "ERR: Invalid syntax. Try !cmd delete test"
+		}
+		return b.db.DeleteCommand(name)
+	default:
+		return errorMsg
+	}
+
+	// TODO:
+	return ""
 }
 
 func (b *RxKiro) updateCounter(cmd *db.Command) string {
