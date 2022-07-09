@@ -112,7 +112,6 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 }
 
 func (b *RxKiro) handleCommandActions(msg twitch.PrivateMessage) string {
-	// ["!cmd", "add", "cmdname", "some", "words", "here"]
 	raw := strings.Split(msg.Message, " ")
 	params := len(raw)
 
@@ -133,8 +132,7 @@ func (b *RxKiro) handleCommandActions(msg twitch.PrivateMessage) string {
 
 	switch action {
 	case "add":
-		output := b.db.AddCommand(name, rawMessage)
-		b.Send(output)
+		return b.db.AddCommand(name, rawMessage)
 	case "edit":
 		return b.db.EditCommand(name, rawMessage)
 	case "delete":
@@ -145,9 +143,6 @@ func (b *RxKiro) handleCommandActions(msg twitch.PrivateMessage) string {
 	default:
 		return errorMsg
 	}
-
-	// TODO:
-	return ""
 }
 
 func (b *RxKiro) updateCounter(cmd *db.Command) string {
