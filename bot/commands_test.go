@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/kirontoo/rxkiro/config"
@@ -30,7 +29,7 @@ func TestIsPositiveInt(t *testing.T) {
 		expected := true
 
 		if got != expected {
-			fmt.Errorf("Expected %v, but got %v", expected, got)
+			t.Errorf("Expected %v, but got %v", expected, got)
 		}
 	})
 
@@ -39,7 +38,7 @@ func TestIsPositiveInt(t *testing.T) {
 		expected := false
 
 		if got != expected {
-			fmt.Errorf("Expected %v, but got %v", expected, got)
+			t.Errorf("Expected %v, but got %v", expected, got)
 		}
 	})
 }
