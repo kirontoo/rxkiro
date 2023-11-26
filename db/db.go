@@ -55,7 +55,9 @@ func (db *Database) GetCommandByName(name string) (*Command, error) {
 func (db *Database) IncrementCounter(id int64, count int64) int64 {
 	count = count + 1
 
-	_, err := db.Store.Exec(fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, id))
+	_, err := db.Store.Exec(
+		fmt.Sprintf(`UPDATE "Commands" SET Counter = %d WHERE id = %d`, count, id),
+	)
 	if err != nil {
 		log.Logger.Error().Err(err).Send()
 	}
@@ -115,8 +117,8 @@ func (db *Database) DeleteCommand(name string) string {
 }
 
 func (db *Database) CommandExists(name string) bool {
-	_, cmdErr := db.GetCommandByName(name)
-	return cmdErr == nil
+	cmd, _ := db.GetCommandByName(name)
+	return cmd == nil
 }
 
 func (db *Database) AddCounter(name string) string {
