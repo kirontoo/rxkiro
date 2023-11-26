@@ -71,7 +71,8 @@ func randomMeFact(b *RxKiro) {
 	b.Send(msg)
 }
 
-/**
+/*
+*
 can take 0 to 2 parameters
 if no parameter given, randNum will return a random number from 0 to 100000
 if 1 parameter, n, given, randNum will return a random number from 0 to n
@@ -97,7 +98,7 @@ func randNum(randRange ...int) int {
 }
 
 func isPositiveInt(n int) bool {
-	return !(n < 0)
+	return n > 0
 }
 
 func convertToInt(n string) (int, string) {
