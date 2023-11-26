@@ -39,7 +39,6 @@ func NewBot(envPath string, logger zerolog.Logger) *RxKiro {
 }
 
 func (b *RxKiro) Connect() {
-
 	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		b.Config.DbHost, b.Config.DbPort, b.Config.DbUser, b.Config.DbPassword, b.Config.DbName)
@@ -51,7 +50,26 @@ func (b *RxKiro) Connect() {
 	} else {
 		log.Info().Str("Streamer", b.Config.Streamer).Str("Bot name", b.Config.BotName).Msg("Connected to chat")
 	}
+}
 
+func (b *RxKiro) Join() {
+	b.Client.Join(b.Config.Streamer)
+}
+
+func (b *RxKiro) ListenToChat() {
+	b.Client.OnPrivateMessage(func(message twitch.PrivateMessage) {
+		log.Info().
+			Str("Usr", message.User.DisplayName).
+			Str("Msg", message.Message).
+			Msg("New Message")
+		cmd, ok := parseCommand(b.Config.CmdPrefix, message.Message)
+		if ok {
+			log.Info().Str("cmd", cmd).Bool("ok", ok).Msg("Cmd Invoked")
+			b.RunCmd(strings.ToLower(cmd), message)
+		} else {
+			log.Debug().Bool("ok?", ok).Send()
+		}
+	})
 }
 
 func trimQuotes(s string) string {
@@ -73,10 +91,14 @@ func (b *RxKiro) Send(msg string) {
 	b.Client.Say(b.Config.Streamer, msg)
 }
 
+func (b *RxKiro) Reply(msgId string, msg string) {
+	b.Client.Reply(b.Config.Streamer, msgId, msg)
+}
+
 func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 	run, ok := b.Commands[cmdName]
 	if cmdName == "cmd" {
-		b.Send(b.handleCommandActions(message))
+		b.Send(b.handleCommandActions(message.Message))
 		return
 	}
 
@@ -111,8 +133,21 @@ func (b *RxKiro) RunCmd(cmdName string, message twitch.PrivateMessage) {
 	}
 }
 
-func (b *RxKiro) handleCommandActions(msg twitch.PrivateMessage) string {
-	raw := strings.Split(msg.Message, " ")
+func parseParams(msg string) []string {
+	raw := strings.Split(msg, " ")
+	cmd := strings.TrimPrefix(raw[0], "!")
+	action := raw[1]
+	name := strings.ToLower(raw[2])
+	rawMessage := strings.Join(raw[3:], " ")
+
+	// TODO: this only works for !cmd add cmdName value
+	// TODO: this could be combined with 'parseCommand'
+
+	return []string{cmd, action, name, rawMessage}
+}
+
+func (b *RxKiro) handleCommandActions(msg string) string {
+	raw := strings.Split(msg, " ")
 	params := len(raw)
 
 	errorMsg := "ERR: Invalid syntax. Try !cmd add test this is a test command LUL"
@@ -185,7 +220,7 @@ func (b *RxKiro) replaceCmdVariables(rawCmd string, s string, msg twitch.Private
 }
 
 func (b *RxKiro) findCmdVars(s string) []string {
-	var matches = []string{}
+	matches := []string{}
 
 	r, err := regexp.Compile(`\${(.*?)}`)
 	if err != nil {
@@ -198,4 +233,19 @@ func (b *RxKiro) findCmdVars(s string) []string {
 	}
 
 	return matches
+}
+
+func parseCommand(cmdPrefix string, message string) (string, bool) {
+	messageWords := strings.SplitN(message, " ", 2)
+	log.Print(messageWords)
+
+	isCommand := strings.HasPrefix(messageWords[0], cmdPrefix)
+	log.Debug().Str("Prefix", cmdPrefix).Bool("isCmd", isCommand).Msg("CommandPrefix")
+
+	if isCommand {
+		command := strings.TrimPrefix(messageWords[0], cmdPrefix)
+		log.Debug().Str("Cmd", command).Msg("Command")
+		return command, true
+	}
+	return "", false
 }
