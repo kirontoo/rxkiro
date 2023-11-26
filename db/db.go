@@ -31,7 +31,7 @@ func Connect(database string, connectStr string) *Database {
 }
 
 func (db *Database) Close() {
-	db.Close()
+	db.Store.Close()
 }
 
 func (db *Database) GetCommandByName(name string) (*Command, error) {
@@ -71,13 +71,14 @@ func (db *Database) AddCommand(name string, value string) string {
 	}
 
 	query := fmt.Sprintf(`
-	INSERT INTO "Commands" (
-		name,
-		value,
-	)
-	VALUES (
-		%s,
-		%s,
+	INSERT INTO "Commands" 
+	(
+		name, 
+		value
+	) 
+	VALUES ( 
+		'%s', 
+		'%s'
 	)`, name, value)
 
 	_, err := db.Store.Exec(query)
